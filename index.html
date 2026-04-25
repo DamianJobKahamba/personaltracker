@@ -128,6 +128,11 @@ main{flex:1;overflow-y:auto}
 .node-btn:hover{background:var(--bg);color:var(--ink)}
 .node-btn.del:hover{background:var(--red-light);color:var(--red)}
 .node-btn.add:hover{background:var(--accent-light);color:var(--accent)}
+.node-btn.edit:hover{background:#EEF3FB;color:var(--blue)}
+.edit-node-form{background:#F0F4FB;border-top:1px solid #C8D8F0;border-bottom:1px solid #C8D8F0;animation:fi .15s ease}
+.edit-form-inner{display:flex}
+.edit-form-body{flex:1;padding:10px 14px 12px 8px;display:flex;flex-direction:column;gap:8px}
+.edit-form-tag{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-bottom:2px}
 .add-node-form{border-top:1px solid var(--border);background:#FAFAF6;animation:fi .15s ease}
 @keyframes fi{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .add-form-inner{display:flex}
@@ -331,7 +336,7 @@ const db = firebase.firestore();
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const COLORS=['#1A9E72','#2B7DD4','#D04E20','#B07A10','#8A3070','#5A9020','#5040B0','#0A8AA0'];
 const TODAY = new Date().toISOString().slice(0,10);
-let S = { goals:[], view:'goals', activeGoalId:null, editGoalId:null, collapsed:{}, addingTo:{} };
+let S = { goals:[], view:'goals', activeGoalId:null, editGoalId:null, collapsed:{}, addingTo:{}, editingNode:null };
 let currentUser = null;
 let firestoreUnsub = null;
 let saveTimer = null;
@@ -442,7 +447,8 @@ function renderNode(n,gid,depth) {
   const ind=Array(depth).fill('<div class="indent-line"></div>').join('');
   const tog=has?(coll?'▶':'▾'):'<span style="color:transparent">·</span>';
   const goal=getGoal(), gc=goal?goal.color:'var(--accent-mid)';
-  let html=`<div class="node-wrap" id="nw-${n.id}"><div class="node-row">
+  const isEditing = S.editingNode === n.id;
+  let html=`<div class="node-wrap" id="nw-${n.id}"><div class="node-row" style="${isEditing?'background:#EEF3FB;':'' }">
     <div style="display:flex;align-self:stretch">${ind}</div>
     <button class="node-toggle" onclick="toggleCollapse('${n.id}')">${tog}</button>
     <input type="checkbox" class="node-check" ${n.done?'checked':''} onchange="toggleDone('${gid}','${n.id}',this.checked)">
@@ -452,11 +458,31 @@ function renderNode(n,gid,depth) {
       ${dateBadge(n.dueDate)}
       <span class="weight-chip ${n.weight>=7?'hi':''}">${n.weight}</span>
       <div class="node-actions">
+        <button class="node-btn edit" onclick="openNodeEdit('${gid}','${n.id}')">✎ edit</button>
         <button class="node-btn add" onclick="openAdd('${n.id}')">+ sub</button>
         <button class="node-btn del" onclick="delNode('${gid}','${n.id}')">✕</button>
       </div>
     </div>
-  </div>`;
+  </div>
+  ${isEditing ? `<div class="edit-node-form"><div class="edit-form-inner">
+    <div style="display:flex;align-self:stretch">${ind}</div>
+    <div class="edit-form-body">
+      <div class="edit-form-tag">Editing activity</div>
+      <div class="add-form-row">
+        <input class="input-name" id="en-name-${n.id}" value="${esc(n.name)}" maxlength="120" onkeydown="if(event.key==='Enter')confirmNodeEdit('${gid}','${n.id}');if(event.key==='Escape')cancelNodeEdit()">
+        <input type="date" class="input-date" id="en-date-${n.id}" value="${n.dueDate||''}">
+      </div>
+      <div class="wrow">
+        <span class="wlabel">Importance:</span>
+        <input type="range" class="wslider" id="en-w-${n.id}" min="1" max="10" value="${n.weight||5}" oninput="document.getElementById('en-wv-${n.id}').textContent=this.value">
+        <span class="wval" id="en-wv-${n.id}">${n.weight||5}</span>
+      </div>
+      <div class="form-actions">
+        <button class="btn-confirm" onclick="confirmNodeEdit('${gid}','${n.id}')">Save changes</button>
+        <button class="btn-discard" onclick="cancelNodeEdit()">Cancel</button>
+      </div>
+    </div>
+  </div></div>` : ''}`;
   if(!coll){
     if(has) html+=n.steps.map(c=>renderNode(c,gid,depth+1)).join('');
     if(S.addingTo[n.id]){
@@ -603,8 +629,29 @@ function delNode(gid,nid){
   if(list){const i=list.findIndex(n=>n.id===nid);if(i>=0)list.splice(i,1)}
   persistGoal(g); renderDetail();
 }
-function openAdd(nid){S.addingTo={[nid]:true};S.collapsed[nid]=false;renderDetail()}
+function openAdd(nid){S.addingTo={[nid]:true};S.collapsed[nid]=false;S.editingNode=null;renderDetail()}
 function closeAdd(nid){delete S.addingTo[nid];renderDetail()}
+
+function openNodeEdit(gid,nid){
+  S.editingNode=nid;
+  S.addingTo={};
+  renderDetail();
+  setTimeout(()=>{const el=document.getElementById('en-name-'+nid);if(el){el.focus();el.select();}},30);
+}
+function cancelNodeEdit(){S.editingNode=null;renderDetail()}
+function confirmNodeEdit(gid,nid){
+  const ne=document.getElementById('en-name-'+nid);
+  const de=document.getElementById('en-date-'+nid);
+  const we=document.getElementById('en-w-'+nid);
+  if(!ne||!ne.value.trim()){if(ne)ne.focus();return}
+  const g=S.goals.find(g=>g.id===gid);
+  const node=findNode(g.steps,nid);
+  node.name=ne.value.trim();
+  node.dueDate=de.value||'';
+  node.weight=parseInt(we.value||5);
+  S.editingNode=null;
+  persistGoal(g);renderDetail();
+}
 function confirmAdd(gid,nid){
   const ne=document.getElementById('af-n-'+nid),de=document.getElementById('af-d-'+nid),we=document.getElementById('af-w-'+nid);
   if(!ne||!ne.value.trim()){if(ne)ne.focus();return}
