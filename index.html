@@ -33,6 +33,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);disp
 .google-icon{width:20px;height:20px}
 .signin-note{font-size:11px;color:#5C594F;text-align:center}
 
+/* ACCESS DENIED SCREEN */
+.denied-screen{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;z-index:998;flex-direction:column;gap:20px;display:none}
+.denied-screen.show{display:flex}
+.denied-icon{font-size:48px;opacity:.4}
+.denied-title{font-family:'Fraunces',serif;font-size:28px;font-weight:300;color:#F4F2ED;text-align:center}
+.denied-sub{font-size:14px;color:#7A776F;text-align:center;max-width:320px;line-height:1.7}
+.denied-email{font-size:12px;color:#5C594F;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-sm);padding:8px 16px;font-family:'DM Sans',sans-serif}
+.denied-signout{font-size:13px;color:#7A776F;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:var(--r-sm);padding:8px 18px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px;transition:color .15s,border-color .15s}
+.denied-signout:hover{color:#F4F2ED;border-color:rgba(255,255,255,.3)}
+
 /* TOPBAR */
 .topbar{background:var(--ink);height:58px;display:flex;align-items:center;padding:0 24px;gap:14px;position:sticky;top:0;z-index:100;flex-shrink:0}
 .logo{font-family:'Fraunces',serif;font-size:19px;font-weight:300;color:#F4F2ED;margin-right:6px}
@@ -223,6 +233,15 @@ main{flex:1;overflow-y:auto}
   <div class="signin-note">Your data is private and only visible to you</div>
 </div>
 
+<!-- ACCESS DENIED SCREEN -->
+<div class="denied-screen" id="denied-screen">
+  <div class="denied-icon">🔒</div>
+  <div class="denied-title">Access restricted</div>
+  <div class="denied-sub">This app is currently invite-only. Your account has not been granted access. Please contact the app owner to request access.</div>
+  <div class="denied-email" id="denied-email"></div>
+  <button class="denied-signout" onclick="signOut()">Sign out and try a different account</button>
+</div>
+
 <!-- TOPBAR -->
 <header class="topbar" id="topbar" style="display:none">
   <div class="logo">Goal<b>Track</b></div>
@@ -354,16 +373,38 @@ function signOut() {
 auth.onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-    document.getElementById('signin-screen').classList.add('hidden');
-    document.getElementById('topbar').style.display = 'flex';
-    document.getElementById('main-app').style.display = 'block';
-    document.getElementById('user-name').textContent = user.displayName || user.email;
-    document.getElementById('user-avatar').src = user.photoURL || '';
-    startListening();
+    // Check if this email is in the allowedUsers whitelist
+    db.collection('allowedUsers').doc(user.email).get().then(doc => {
+      if (doc.exists && doc.data().allowed === true) {
+        // Allowed — show the app
+        document.getElementById('signin-screen').classList.add('hidden');
+        document.getElementById('denied-screen').classList.remove('show');
+        document.getElementById('topbar').style.display = 'flex';
+        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('user-name').textContent = user.displayName || user.email;
+        document.getElementById('user-avatar').src = user.photoURL || '';
+        startListening();
+      } else {
+        // Not on the whitelist — show denied screen
+        document.getElementById('signin-screen').classList.add('hidden');
+        document.getElementById('topbar').style.display = 'none';
+        document.getElementById('main-app').style.display = 'none';
+        document.getElementById('denied-email').textContent = 'Signed in as: ' + user.email;
+        document.getElementById('denied-screen').classList.add('show');
+      }
+    }).catch(() => {
+      // Firestore read failed (rules blocked it) — also not allowed
+      document.getElementById('signin-screen').classList.add('hidden');
+      document.getElementById('topbar').style.display = 'none';
+      document.getElementById('main-app').style.display = 'none';
+      document.getElementById('denied-email').textContent = 'Signed in as: ' + user.email;
+      document.getElementById('denied-screen').classList.add('show');
+    });
   } else {
     currentUser = null;
     if (firestoreUnsub) { firestoreUnsub(); firestoreUnsub = null; }
     document.getElementById('signin-screen').classList.remove('hidden');
+    document.getElementById('denied-screen').classList.remove('show');
     document.getElementById('topbar').style.display = 'none';
     document.getElementById('main-app').style.display = 'none';
   }
@@ -719,3 +760,4 @@ document.addEventListener('keydown',e=>{
 </script>
 </body>
 </html>
+
