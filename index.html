@@ -190,7 +190,9 @@ main{flex:1;overflow-y:auto}
 
 /* DASHBOARD */
 .dash-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-bottom:28px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;box-shadow:var(--sh)}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;box-shadow:var(--sh);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif;transition:box-shadow .15s,border-color .15s,transform .12s}
+.stat-card:hover{box-shadow:var(--sh-lg);border-color:var(--border-strong);transform:translateY(-1px)}
+.stat-card.active{border-color:var(--accent-mid);background:var(--accent-light)}
 .stat-label{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
 .stat-value{font-family:'Fraunces',serif;font-size:28px;font-weight:300;color:var(--ink);line-height:1}
 .stat-value.red{color:var(--red)}
@@ -199,7 +201,10 @@ main{flex:1;overflow-y:auto}
 .stat-sub{font-size:11px;color:var(--ink-3);margin-top:3px}
 .dash-sl{font-size:11px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin:28px 0 12px}
 .pending-list{display:flex;flex-direction:column;gap:6px}
-.pending-item{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border-strong);border-radius:var(--r-sm);padding:12px 16px;display:flex;align-items:flex-start;gap:12px;box-shadow:var(--sh)}
+.pending-item{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border-strong);border-radius:var(--r-sm);padding:12px 16px;display:flex;align-items:flex-start;gap:12px;box-shadow:var(--sh);cursor:pointer;transition:box-shadow .15s,border-color .15s,transform .12s}
+.pending-item:hover{box-shadow:var(--sh-lg);border-color:var(--border-strong);transform:translateY(-1px)}
+.pending-item:focus-visible{outline:2px solid var(--accent-mid);outline-offset:2px}
+.node-row.focused{background:#FFF8DE!important;box-shadow:inset 3px 0 0 var(--amber-mid)}
 .pending-item.overdue{border-left-color:var(--red)}
 .pending-item.today{border-left-color:var(--amber-mid)}
 .pending-item.soon{border-left-color:#E0B840}
@@ -394,7 +399,7 @@ const db = firebase.firestore();
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const COLORS=['#1A9E72','#2B7DD4','#D04E20','#B07A10','#8A3070','#5A9020','#5040B0','#0A8AA0'];
 const TODAY = new Date().toISOString().slice(0,10);
-let S = { goals:[], view:'goals', activeGoalId:null, editGoalId:null, collapsed:{}, addingTo:{}, editingNode:null };
+let S = { goals:[], view:'goals', activeGoalId:null, editGoalId:null, collapsed:{}, addingTo:{}, editingNode:null, dashboardFilter:'pending', focusNodeId:null };
 let currentUser = null;
 let firestoreUnsub = null;
 let saveTimer = null;
@@ -528,7 +533,9 @@ function renderNode(n,gid,depth) {
   const tog=has?(coll?'▶':'▾'):'<span style="color:transparent">·</span>';
   const goal=getGoal(), gc=goal?goal.color:'var(--accent-mid)';
   const isEditing = S.editingNode === n.id;
-  let html=`<div class="node-wrap" id="nw-${n.id}"><div class="node-row" style="${isEditing?'background:#EEF3FB;':'' }">
+  const isFocused = S.focusNodeId === n.id;
+  const rowStyle = isEditing ? 'background:#EEF3FB;' : (isFocused ? 'background:#FFF8DE;box-shadow:inset 3px 0 0 var(--amber-mid);' : '');
+  let html=`<div class="node-wrap" id="nw-${n.id}"><div class="node-row ${isFocused?'focused':''}" style="${rowStyle}">
     <div style="display:flex;align-self:stretch">${ind}</div>
     <button class="node-toggle" onclick="toggleCollapse('${n.id}')">${tog}</button>
     <input type="checkbox" class="node-check" ${n.done?'checked':''} onchange="toggleDone('${gid}','${n.id}',this.checked)">
@@ -646,13 +653,62 @@ function collectLeaves(steps,out){steps.forEach(n=>{if(!n.steps||!n.steps.length
 function collectPending(){
   const items=[];
   S.goals.forEach(g=>{
-    function walk(steps,path){steps.forEach(n=>{
-      if(!n.done)items.push({node:n,goal:g,path:[...path,n.name]});
-      if(n.steps&&n.steps.length)walk(n.steps,[...path,n.name]);
+    function walk(steps,path,parentIds){steps.forEach(n=>{
+      if(!n.done)items.push({node:n,goal:g,path:[...path,n.name],parentIds:[...parentIds]});
+      if(n.steps&&n.steps.length)walk(n.steps,[...path,n.name],[...parentIds,n.id]);
     })}
-    walk(g.steps,[g.title]);
+    walk(g.steps,[g.title],[]);
   });
   return items;
+}
+
+function setDashboardFilter(filter){
+  S.dashboardFilter=filter;
+  renderDashboard();
+}
+
+function matchesDashboardFilter(item,filter){
+  const status=ds(item.node.dueDate);
+  if(filter==='pending')return true;
+  if(filter==='overdue')return status==='overdue';
+  if(filter==='today')return status==='today';
+  if(filter==='week')return status==='soon';
+  return true;
+}
+
+function dashboardFilterTitle(filter,count){
+  const labels={
+    pending:'All pending activities',
+    overdue:'Overdue activities',
+    today:'Activities due today',
+    week:'Activities due this week',
+    goals:'All active goals'
+  };
+  return `${labels[filter]||'Dashboard'} (${count})`;
+}
+
+function openDashboardNode(gid,nid,parentIdsText){
+  const parentIds=parentIdsText?String(parentIdsText).split('|').filter(Boolean):[];
+  S.activeGoalId=gid;
+  S.addingTo={};
+  S.editingNode=null;
+  S.focusNodeId=nid;
+  parentIds.forEach(id=>S.collapsed[id]=false);
+  switchView('detail');
+  setTimeout(()=>scrollToFocusedNode(nid),80);
+}
+
+function openDashboardGoal(gid){
+  S.activeGoalId=gid;
+  S.addingTo={};
+  S.editingNode=null;
+  S.focusNodeId=null;
+  switchView('detail');
+}
+
+function scrollToFocusedNode(nid){
+  const el=document.getElementById('nw-'+nid);
+  if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 function renderDashboard(){
@@ -660,28 +716,58 @@ function renderDashboard(){
   const overdue=items.filter(i=>ds(i.node.dueDate)==='overdue');
   const today=items.filter(i=>ds(i.node.dueDate)==='today');
   const soon=items.filter(i=>ds(i.node.dueDate)==='soon');
+  const filter=S.dashboardFilter||'pending';
+  const stat=(key,label,value,sub,cls='')=>`<button type="button" class="stat-card ${filter===key?'active':''}" onclick="setDashboardFilter('${key}')">
+    <div class="stat-label">${label}</div><div class="stat-value ${cls}">${value}</div><div class="stat-sub">${sub}</div>
+  </button>`;
+
   document.getElementById('dash-stats').innerHTML=`
-    <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value">${items.length}</div><div class="stat-sub">open activities</div></div>
-    <div class="stat-card"><div class="stat-label">Overdue</div><div class="stat-value ${overdue.length?'red':''}">${overdue.length}</div><div class="stat-sub">past due date</div></div>
-    <div class="stat-card"><div class="stat-label">Due today</div><div class="stat-value ${today.length?'amber':''}">${today.length}</div><div class="stat-sub">need attention now</div></div>
-    <div class="stat-card"><div class="stat-label">Due this week</div><div class="stat-value ${soon.length?'amber':''}">${soon.length}</div><div class="stat-sub">within 7 days</div></div>
-    <div class="stat-card"><div class="stat-label">Goals</div><div class="stat-value green">${S.goals.length}</div><div class="stat-sub">active goals</div></div>`;
-  if(!items.length){document.getElementById('dash-pending').innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--ink-3)"><div style="font-family:'Fraunces',serif;font-size:32px;font-weight:300;color:var(--ink-2);margin-bottom:8px">✓</div><div style="font-size:14px;color:var(--ink-2)">All activities complete!</div></div>`;return}
+    ${stat('pending','Pending',items.length,'open activities')}
+    ${stat('overdue','Overdue',overdue.length,'past due date',overdue.length?'red':'')}
+    ${stat('today','Due today',today.length,'need attention now',today.length?'amber':'')}
+    ${stat('week','Due this week',soon.length,'within 7 days',soon.length?'amber':'')}
+    ${stat('goals','Goals',S.goals.length,'active goals','green')}`;
+
+  const holder=document.getElementById('dash-pending');
+
+  if(filter==='goals'){
+    if(!S.goals.length){
+      holder.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--ink-3)">No goals yet.</div>`;
+      return;
+    }
+    const goalHTML=g=>{
+      const pct=goalPct(g),tot=countAll(g.steps),done=countDone(g.steps);
+      return`<div class="pending-item" role="button" tabindex="0" onclick="openDashboardGoal('${g.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDashboardGoal('${g.id}')}">
+        <div class="pi-color" style="background:${g.color}"></div>
+        <div class="pi-body"><div class="pi-path">Goal</div><div class="pi-name">${esc(g.title)}</div></div>
+        <div class="pi-right">${g.dueDate?dateBadge(g.dueDate):`<span class="date-badge none">No date</span>`}<span style="font-size:10px;color:var(--ink-3)">${done}/${tot} · ${pct}%</span></div>
+      </div>`;
+    };
+    holder.innerHTML=`<div class="dash-sl">${dashboardFilterTitle(filter,S.goals.length)}</div><div class="pending-list">${S.goals.map(goalHTML).join('')}</div>`;
+    return;
+  }
+
+  const filtered=items.filter(i=>matchesDashboardFilter(i,filter));
+  if(!filtered.length){
+    holder.innerHTML=`<div class="dash-sl">${dashboardFilterTitle(filter,0)}</div><div style="text-align:center;padding:60px 20px;color:var(--ink-3)"><div style="font-family:'Fraunces',serif;font-size:32px;font-weight:300;color:var(--ink-2);margin-bottom:8px">✓</div><div style="font-size:14px;color:var(--ink-2)">Nothing in this category.</div></div>`;
+    return;
+  }
+
   const ord={overdue:0,today:1,soon:2,future:3,none:4};
-  const withDate=items.filter(i=>i.node.dueDate).sort((a,b)=>{const sa=ord[ds(a.node.dueDate)],sb=ord[ds(b.node.dueDate)];return sa!==sb?sa-sb:a.node.dueDate.localeCompare(b.node.dueDate)});
-  const noDate=items.filter(i=>!i.node.dueDate);
+  const withDate=filtered.filter(i=>i.node.dueDate).sort((a,b)=>{const sa=ord[ds(a.node.dueDate)],sb=ord[ds(b.node.dueDate)];return sa!==sb?sa-sb:a.node.dueDate.localeCompare(b.node.dueDate)});
+  const noDate=filtered.filter(i=>!i.node.dueDate);
   function piHTML(item){
-    const n=item.node,status=ds(n.dueDate)||'nodate',path=item.path.slice(0,-1).join(' › ');
-    return`<div class="pending-item ${status}">
+    const n=item.node,status=ds(n.dueDate)||'nodate',path=item.path.slice(0,-1).join(' › '),parentIds=(item.parentIds||[]).join('|');
+    return`<div class="pending-item ${status}" role="button" tabindex="0" onclick="openDashboardNode('${item.goal.id}','${n.id}','${parentIds}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDashboardNode('${item.goal.id}','${n.id}','${parentIds}')}">
       <div class="pi-color" style="background:${item.goal.color}"></div>
       <div class="pi-body"><div class="pi-path">${esc(path)}</div><div class="pi-name">${esc(n.name)}</div></div>
       <div class="pi-right">${n.dueDate?dateBadge(n.dueDate):`<span class="date-badge none">No date</span>`}<span style="font-size:10px;color:var(--ink-3)">weight ${n.weight}</span></div>
     </div>`;
   }
-  let html='';
-  if(withDate.length)html+=`<div class="dash-sl">Scheduled (${withDate.length})</div><div class="pending-list">${withDate.map(piHTML).join('')}</div>`;
+  let html=`<div class="dash-sl">${dashboardFilterTitle(filter,filtered.length)}</div>`;
+  if(withDate.length)html+=`<div class="pending-list">${withDate.map(piHTML).join('')}</div>`;
   if(noDate.length)html+=`<div class="dash-sl">No date assigned (${noDate.length})</div><div class="pending-list">${noDate.map(piHTML).join('')}</div>`;
-  document.getElementById('dash-pending').innerHTML=html;
+  holder.innerHTML=html;
 }
 
 // ── VIEW SWITCHING ────────────────────────────────────────────────────────────
@@ -694,7 +780,7 @@ function switchView(v){
   else if(v==='dashboard'){document.getElementById('view-dashboard').classList.add('active');document.getElementById('tab-dash').classList.add('active');renderDashboard();}
 }
 function renderCurrent(){switchView(S.view)}
-function openDetail(id){S.activeGoalId=id;S.addingTo={};switchView('detail')}
+function openDetail(id){S.activeGoalId=id;S.addingTo={};S.editingNode=null;S.focusNodeId=null;switchView('detail')}
 
 // ── TREE ACTIONS ──────────────────────────────────────────────────────────────
 function toggleCollapse(id){S.collapsed[id]=!S.collapsed[id];renderDetail()}
