@@ -257,6 +257,360 @@ main{flex:1;overflow-y:auto}
   .goals-grid{grid-template-columns:1fr}
   .form-row{flex-direction:column;gap:0}
 }
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   RESPONSIVE SIDEBAR APP SHELL
+   Replaces the old crowded mobile topbar with a left navigation drawer.
+───────────────────────────────────────────────────────────────────────────── */
+.app-shell{
+  min-height:100vh;
+  width:100%;
+  background:var(--bg);
+  display:flex;
+  overflow:hidden;
+}
+.sidebar{
+  width:258px;
+  min-width:258px;
+  height:100vh;
+  background:var(--ink);
+  color:#F4F2ED;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:18px 14px;
+  overflow-y:auto;
+  position:sticky;
+  top:0;
+  z-index:120;
+}
+.sidebar-brand{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:22px;
+  padding:0 4px;
+}
+.sidebar-logo{
+  font-family:'Fraunces',serif;
+  font-size:21px;
+  font-weight:300;
+  color:#F4F2ED;
+  white-space:nowrap;
+}
+.sidebar-logo b{color:var(--accent-mid);font-weight:500}
+.sidebar-close{
+  display:none;
+  background:rgba(255,255,255,.08);
+  color:#F4F2ED;
+  border:none;
+  width:30px;
+  height:30px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:20px;
+  line-height:1;
+}
+.sidebar-nav{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.side-link{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#B8B3A8;
+  background:transparent;
+  border:none;
+  border-radius:12px;
+  padding:11px 12px;
+  font-size:14px;
+  font-family:'DM Sans',sans-serif;
+  cursor:pointer;
+  text-align:left;
+  transition:background .15s,color .15s,transform .12s;
+}
+.side-link:hover{
+  background:rgba(255,255,255,.08);
+  color:#F4F2ED;
+}
+.side-link.active{
+  background:rgba(255,255,255,.13);
+  color:#F4F2ED;
+}
+.side-icon{
+  width:22px;
+  height:22px;
+  border-radius:8px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.06);
+  color:var(--accent-mid);
+  flex-shrink:0;
+}
+.sidebar-bottom{
+  padding-top:16px;
+  margin-top:24px;
+  border-top:1px solid rgba(255,255,255,.09);
+}
+.user-box{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.user-box .user-avatar{
+  width:34px;
+  height:34px;
+  flex-shrink:0;
+}
+.user-meta{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.user-meta .user-name{
+  color:#D8D3CA;
+  max-width:170px;
+  font-size:12px;
+}
+.main-panel{
+  flex:1;
+  min-width:0;
+  height:100vh;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+}
+.main-topbar{
+  position:sticky;
+  top:0;
+  z-index:90;
+  min-height:70px;
+  background:rgba(244,242,237,.96);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:13px 22px;
+  flex-shrink:0;
+}
+.menu-toggle{
+  display:none;
+  background:var(--surface);
+  color:var(--ink);
+  border:1px solid var(--border);
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  font-size:20px;
+  cursor:pointer;
+  box-shadow:var(--sh);
+}
+.page-title-wrap{
+  flex:1;
+  min-width:0;
+}
+.page-title{
+  font-family:'Fraunces',serif;
+  font-size:25px;
+  font-weight:500;
+  color:var(--ink);
+  line-height:1.15;
+}
+.page-subtitle{
+  font-size:11px;
+  color:var(--ink-3);
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.topbar-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  flex-shrink:0;
+}
+.main-topbar .btn-new-goal{
+  padding:10px 16px;
+  border-radius:12px;
+}
+.mobile-overlay{
+  display:none;
+}
+.settings-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  box-shadow:var(--sh);
+  padding:22px;
+  margin-bottom:16px;
+}
+.settings-section-title{
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  margin-bottom:14px;
+}
+.settings-help{
+  font-size:13px;
+  color:var(--ink-2);
+  line-height:1.6;
+  margin-bottom:14px;
+}
+.toggle-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:14px 0;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+}
+.toggle-row:last-of-type{border-bottom:none}
+.toggle-title{
+  font-size:14px;
+  font-weight:600;
+  color:var(--ink);
+  margin-bottom:3px;
+}
+.toggle-desc{
+  font-size:12px;
+  color:var(--ink-3);
+  line-height:1.5;
+}
+.toggle-row input[type="checkbox"]{
+  width:42px;
+  height:24px;
+  flex-shrink:0;
+  accent-color:var(--accent-mid);
+  cursor:pointer;
+}
+.notification-note{
+  background:var(--accent-light);
+  border:1px solid #B0D8C8;
+  color:var(--accent);
+  border-radius:var(--r-sm);
+  padding:10px 12px;
+  font-size:12px;
+  line-height:1.55;
+  margin-top:16px;
+}
+.email-add-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-bottom:12px;
+}
+.email-list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin:10px 0 16px;
+}
+.email-chip{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  border:1px solid var(--border);
+  background:var(--bg);
+  border-radius:var(--r-sm);
+  padding:9px 10px;
+  font-size:13px;
+  color:var(--ink-2);
+}
+.email-empty{
+  font-size:13px;
+  color:var(--ink-3);
+  padding:8px 0;
+}
+
+@media(max-width:900px){
+  .sidebar{
+    position:fixed;
+    inset:0 auto 0 0;
+    transform:translateX(-105%);
+    transition:transform .24s ease;
+    box-shadow:var(--sh-lg);
+  }
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-close{display:inline-flex;align-items:center;justify-content:center}
+  .mobile-overlay{
+    display:block;
+    position:fixed;
+    inset:0;
+    background:rgba(26,25,22,.42);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s;
+    z-index:110;
+  }
+  .mobile-overlay.show{
+    opacity:1;
+    pointer-events:auto;
+  }
+  .menu-toggle{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .main-topbar{
+    min-height:auto;
+    padding:12px 14px;
+    flex-wrap:wrap;
+  }
+  .page-title{
+    font-size:22px;
+  }
+  .topbar-actions{
+    width:100%;
+    justify-content:space-between;
+  }
+  .sync-badge{
+    order:1;
+  }
+  .btn-new-goal{
+    order:2;
+    margin-left:auto;
+  }
+}
+
+@media(max-width:600px){
+  body{overflow-x:hidden}
+  .main-panel{height:100vh}
+  .view{
+    width:100%;
+    max-width:100%;
+    padding:18px 14px 60px;
+  }
+  .overall-card{
+    padding:16px;
+    gap:14px;
+  }
+  .oc-pct{font-size:27px}
+  .goals-grid{grid-template-columns:1fr}
+  .goal-card{padding:18px 16px}
+  .email-add-row{flex-direction:column;align-items:stretch}
+  .email-add-row .btn-save{width:100%}
+  .node-row{
+    align-items:flex-start;
+    overflow-x:auto;
+  }
+  .node-meta{
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -296,76 +650,177 @@ main{flex:1;overflow-y:auto}
   <button class="denied-signout" onclick="signOut()">Sign out and try a different account</button>
 </div>
 
-<!-- TOPBAR -->
-<header class="topbar" id="topbar" style="display:none">
-  <div class="logo">Timiza<b>Malengo</b></div>
-  <button class="nav-tab active" id="tab-goals" onclick="switchView('goals')">Goals</button>
-  <button class="nav-tab" id="tab-dash" onclick="switchView('dashboard')">Dashboard</button>
-  <div class="spacer"></div>
-  <div class="sync-badge" id="sync-badge"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Synced</span></div>
-  <div class="user-pill">
-    <img class="user-avatar" id="user-avatar" src="" alt="">
-    <span class="user-name" id="user-name"></span>
-  </div>
-  <button class="btn-signout" onclick="signOut()">Sign out</button>
-  <button class="btn-new-goal" onclick="openGoalModal()">+ New Goal</button>
-</header>
+<!-- APPLICATION SHELL -->
+<div class="app-shell" id="main-app" style="display:none">
+  <!-- MOBILE OVERLAY -->
+  <div class="mobile-overlay" id="mobile-overlay" onclick="closeSidebar()"></div>
 
-<div class="loading-bar" id="loading-bar"></div>
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div>
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">Timiza<b>Malengo</b></div>
+        <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">×</button>
+      </div>
 
-<main id="main-app" style="display:none">
-  <!-- GOALS VIEW -->
-  <div class="view active" id="view-goals">
-    <div class="overall-card" id="overall-card" style="display:none">
-      <div class="oc-left">
-        <div class="oc-eyebrow">Overall completion across all goals</div>
-        <div class="oc-track"><div class="oc-fill" id="oc-fill" style="width:0%"></div></div>
-      </div>
-      <div class="oc-right">
-        <div class="oc-pct" id="oc-pct">0%</div>
-        <div class="oc-sub" id="oc-sub"></div>
-      </div>
+      <nav class="sidebar-nav">
+        <button class="side-link active" id="side-goals" onclick="switchView('goals')">
+          <span class="side-icon">◎</span><span>Goals</span>
+        </button>
+        <button class="side-link" id="side-dashboard" onclick="switchView('dashboard')">
+          <span class="side-icon">▦</span><span>Dashboard</span>
+        </button>
+        <button class="side-link" id="side-notifications" onclick="switchView('notifications')">
+          <span class="side-icon">✉</span><span>Notifications</span>
+        </button>
+      </nav>
     </div>
-    <div class="section-eyebrow">Your goals</div>
-    <div class="goals-grid" id="goals-grid"></div>
-  </div>
 
-  <!-- DETAIL VIEW -->
-  <div class="view" id="view-detail">
-    <button class="detail-back" onclick="switchView('goals')">← Back to goals</button>
-    <div id="detail-header"></div>
-    <div class="tree-section">
-      <div class="tree-header">
-        <span class="tree-header-label">Activities &amp; sub-activities</span>
-        <span id="tree-count" style="font-size:11px;color:var(--ink-3)"></span>
-      </div>
-      <div class="tree-body" id="tree-body"></div>
-      <div class="add-root-row">
-        <input class="input-name" id="root-name" placeholder="Add top-level activity..." maxlength="120" onkeydown="if(event.key==='Enter')tryShowRootWeight()">
-        <input type="date" class="input-date" id="root-date">
-        <button class="btn-sm" onclick="tryShowRootWeight()">+ Add</button>
-      </div>
-      <div class="root-weight-form" id="root-weight-form">
-        <div class="wrow">
-          <span class="wlabel">Importance (weight):</span>
-          <input type="range" class="wslider" id="root-wslider" min="1" max="10" value="5" oninput="document.getElementById('root-wval').textContent=this.value">
-          <span class="wval" id="root-wval">5</span>
-        </div>
-        <div class="form-actions" style="margin-top:8px">
-          <button class="btn-confirm" onclick="addRootStep()">Add activity</button>
-          <button class="btn-discard" onclick="hideRootWeight()">Cancel</button>
+    <div class="sidebar-bottom">
+      <div class="user-box">
+        <img class="user-avatar" id="user-avatar" src="" alt="">
+        <div class="user-meta">
+          <div class="user-name" id="user-name"></div>
+          <button class="btn-signout" onclick="signOut()">Sign out</button>
         </div>
       </div>
     </div>
-  </div>
+  </aside>
 
-  <!-- DASHBOARD VIEW -->
-  <div class="view" id="view-dashboard">
-    <div class="section-eyebrow">Overview</div>
-    <div class="dash-stats" id="dash-stats"></div>
-    <div id="dash-pending"></div>
-  </div>
-</main>
+  <!-- MAIN CONTENT -->
+  <main class="main-panel">
+    <header class="main-topbar" id="topbar">
+      <button class="menu-toggle" onclick="openSidebar()" aria-label="Open menu">☰</button>
+      <div class="page-title-wrap">
+        <div class="page-title" id="page-title">Goals</div>
+        <div class="page-subtitle" id="page-subtitle">Panga · Fuatilia · Timiza</div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="sync-badge" id="sync-badge"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Synced</span></div>
+        <button class="btn-new-goal" onclick="openGoalModal()">+ New Goal</button>
+      </div>
+    </header>
+
+    <!-- GOALS VIEW -->
+    <div class="view active" id="view-goals">
+      <div class="overall-card" id="overall-card" style="display:none">
+        <div class="oc-left">
+          <div class="oc-eyebrow">Overall completion across all goals</div>
+          <div class="oc-track"><div class="oc-fill" id="oc-fill" style="width:0%"></div></div>
+        </div>
+        <div class="oc-right">
+          <div class="oc-pct" id="oc-pct">0%</div>
+          <div class="oc-sub" id="oc-sub"></div>
+        </div>
+      </div>
+      <div class="section-eyebrow">Your goals</div>
+      <div class="goals-grid" id="goals-grid"></div>
+    </div>
+
+    <!-- DETAIL VIEW -->
+    <div class="view" id="view-detail">
+      <button class="detail-back" onclick="switchView('goals')">← Back to goals</button>
+      <div id="detail-header"></div>
+      <div class="tree-section">
+        <div class="tree-header">
+          <span class="tree-header-label">Activities &amp; sub-activities</span>
+          <span id="tree-count" style="font-size:11px;color:var(--ink-3)"></span>
+        </div>
+        <div class="tree-body" id="tree-body"></div>
+        <div class="add-root-row">
+          <input class="input-name" id="root-name" placeholder="Add top-level activity..." maxlength="120" onkeydown="if(event.key==='Enter')tryShowRootWeight()">
+          <input type="date" class="input-date" id="root-date">
+          <button class="btn-sm" onclick="tryShowRootWeight()">+ Add</button>
+        </div>
+        <div class="root-weight-form" id="root-weight-form">
+          <div class="wrow">
+            <span class="wlabel">Importance (weight):</span>
+            <input type="range" class="wslider" id="root-wslider" min="1" max="10" value="5" oninput="document.getElementById('root-wval').textContent=this.value">
+            <span class="wval" id="root-wval">5</span>
+          </div>
+          <div class="form-actions" style="margin-top:8px">
+            <button class="btn-confirm" onclick="addRootStep()">Add activity</button>
+            <button class="btn-discard" onclick="hideRootWeight()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div class="view" id="view-dashboard">
+      <div class="section-eyebrow">Overview</div>
+      <div class="dash-stats" id="dash-stats"></div>
+      <div id="dash-pending"></div>
+    </div>
+
+    <!-- NOTIFICATIONS VIEW -->
+    <div class="view" id="view-notifications">
+      <div class="detail-header">
+        <div class="dh-top">
+          <div class="dh-dot" style="background:var(--accent-mid)"></div>
+          <div>
+            <div class="dh-title">Notifications</div>
+            <div class="dh-desc">
+              Choose whether Timiza should send email reminders for activities due today and overdue activities.
+              You can also add accountability partners who will receive the same reminder email.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-section-title">Email reminder options</div>
+
+        <label class="toggle-row">
+          <div>
+            <div class="toggle-title">Enable email notifications</div>
+            <div class="toggle-desc">Master switch for reminder emails.</div>
+          </div>
+          <input type="checkbox" id="notif-enabled">
+        </label>
+
+        <label class="toggle-row">
+          <div>
+            <div class="toggle-title">Tasks due today</div>
+            <div class="toggle-desc">Send a reminder when an incomplete activity is due today.</div>
+          </div>
+          <input type="checkbox" id="notif-due-today">
+        </label>
+
+        <label class="toggle-row">
+          <div>
+            <div class="toggle-title">Overdue tasks</div>
+            <div class="toggle-desc">Send a reminder when an incomplete activity has passed its due date.</div>
+          </div>
+          <input type="checkbox" id="notif-overdue">
+        </label>
+
+        <div class="notification-note">
+          The HTML app stores these settings in Firestore. The real email sending is done by the Firebase Cloud Function included with this code.
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-section-title">Accountability emails</div>
+        <div class="settings-help">
+          Add trusted friends, mentors, or accountability partners. They will receive the same due-today and overdue task reminders when notifications are enabled.
+        </div>
+
+        <div class="email-add-row">
+          <input type="email" class="form-input" id="extra-email-input" placeholder="friend@example.com">
+          <button class="btn-save" type="button" onclick="addExtraEmail()">Add</button>
+        </div>
+
+        <div class="email-list" id="extra-email-list"></div>
+
+        <div class="modal-btns">
+          <button class="btn-save" onclick="saveNotificationSettings()">Save Notification Settings</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
 
 <!-- GOAL MODAL -->
 <div class="modal-overlay" id="goal-modal" onclick="if(event.target===this)closeGoalModal()">
@@ -409,9 +864,10 @@ const db = firebase.firestore();
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const COLORS=['#1A9E72','#2B7DD4','#D04E20','#B07A10','#8A3070','#5A9020','#5040B0','#0A8AA0'];
 const TODAY = new Date().toISOString().slice(0,10);
-let S = { goals:[], view:'goals', activeGoalId:null, editGoalId:null, collapsed:{}, addingTo:{}, editingNode:null, dashboardFilter:'pending', focusNodeId:null };
+let S = { goals:[], view:'goals', activeGoalId:null, editGoalId:null, collapsed:{}, addingTo:{}, editingNode:null, dashboardFilter:'pending', focusNodeId:null, notificationSettings:{ enabled:false, dueToday:true, overdue:true, extraEmails:[], primaryEmail:'' } };
 let currentUser = null;
 let firestoreUnsub = null;
+let notificationsUnsub = null;
 let saveTimer = null;
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
@@ -434,10 +890,11 @@ auth.onAuthStateChanged(user => {
         document.getElementById('signin-screen').classList.add('hidden');
         document.getElementById('denied-screen').classList.remove('show');
         document.getElementById('topbar').style.display = 'flex';
-        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('main-app').style.display = 'flex';
         document.getElementById('user-name').textContent = user.displayName || user.email;
         document.getElementById('user-avatar').src = user.photoURL || '';
         startListening();
+        startNotificationListening();
       } else {
         // Not on the whitelist — show denied screen
         document.getElementById('signin-screen').classList.add('hidden');
@@ -457,6 +914,7 @@ auth.onAuthStateChanged(user => {
   } else {
     currentUser = null;
     if (firestoreUnsub) { firestoreUnsub(); firestoreUnsub = null; }
+    if (notificationsUnsub) { notificationsUnsub(); notificationsUnsub = null; }
     document.getElementById('signin-screen').classList.remove('hidden');
     document.getElementById('denied-screen').classList.remove('show');
     document.getElementById('topbar').style.display = 'none';
@@ -467,6 +925,28 @@ auth.onAuthStateChanged(user => {
 // ── FIRESTORE SYNC ────────────────────────────────────────────────────────────
 function goalsRef() {
   return db.collection('users').doc(currentUser.uid).collection('goals');
+}
+
+function notificationRef() {
+  return db.collection('users').doc(currentUser.uid).collection('settings').doc('notifications');
+}
+
+function startNotificationListening() {
+  if (!currentUser) return;
+  if (notificationsUnsub) notificationsUnsub();
+  notificationsUnsub = notificationRef().onSnapshot(doc => {
+    const defaults = {
+      enabled: false,
+      dueToday: true,
+      overdue: true,
+      extraEmails: [],
+      primaryEmail: currentUser.email || ''
+    };
+    S.notificationSettings = doc.exists ? { ...defaults, ...doc.data() } : defaults;
+    renderNotifications();
+  }, err => {
+    console.error(err);
+  });
 }
 
 function startListening() {
@@ -781,14 +1261,66 @@ function renderDashboard(){
 }
 
 // ── VIEW SWITCHING ────────────────────────────────────────────────────────────
+function setPageMeta(title,subtitle){
+  const t=document.getElementById('page-title');
+  const s=document.getElementById('page-subtitle');
+  if(t)t.textContent=title;
+  if(s)s.textContent=subtitle||'Panga · Fuatilia · Timiza';
+}
+
+function setActiveSide(id){
+  document.querySelectorAll('.side-link').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById(id);
+  if(el)el.classList.add('active');
+}
+
+function openSidebar(){
+  const sidebar=document.getElementById('sidebar');
+  const overlay=document.getElementById('mobile-overlay');
+  if(sidebar)sidebar.classList.add('open');
+  if(overlay)overlay.classList.add('show');
+}
+
+function closeSidebar(){
+  const sidebar=document.getElementById('sidebar');
+  const overlay=document.getElementById('mobile-overlay');
+  if(sidebar)sidebar.classList.remove('open');
+  if(overlay)overlay.classList.remove('show');
+}
+
 function switchView(v){
   S.view=v;
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
-  if(v==='goals'){document.getElementById('view-goals').classList.add('active');document.getElementById('tab-goals').classList.add('active');renderGoals();}
-  else if(v==='detail'){document.getElementById('view-detail').classList.add('active');document.getElementById('tab-goals').classList.add('active');renderDetail();}
-  else if(v==='dashboard'){document.getElementById('view-dashboard').classList.add('active');document.getElementById('tab-dash').classList.add('active');renderDashboard();}
+
+  if(v==='goals'){
+    document.getElementById('view-goals').classList.add('active');
+    setActiveSide('side-goals');
+    setPageMeta('Goals','Create, review, and complete your goals.');
+    renderGoals();
+  }
+  else if(v==='detail'){
+    document.getElementById('view-detail').classList.add('active');
+    setActiveSide('side-goals');
+    const g=getGoal();
+    setPageMeta(g?g.title:'Goal details','Activities and sub-activities.');
+    renderDetail();
+  }
+  else if(v==='dashboard'){
+    document.getElementById('view-dashboard').classList.add('active');
+    setActiveSide('side-dashboard');
+    setPageMeta('Dashboard','Pending, overdue, due today, and due this week.');
+    renderDashboard();
+  }
+  else if(v==='notifications'){
+    document.getElementById('view-notifications').classList.add('active');
+    setActiveSide('side-notifications');
+    setPageMeta('Notifications','Email reminders and accountability partners.');
+    renderNotifications();
+  }
+
+  closeSidebar();
 }
+
 function renderCurrent(){switchView(S.view)}
 function openDetail(id){S.activeGoalId=id;S.addingTo={};S.editingNode=null;S.focusNodeId=null;switchView('detail')}
 
@@ -889,6 +1421,108 @@ function deleteGoal(id){
 }
 
 
+// ── NOTIFICATIONS SETTINGS ───────────────────────────────────────────────────
+function normalizeEmail(email){
+  return String(email||'').trim().toLowerCase();
+}
+function isValidEmail(email){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email||'').trim());
+}
+function getNotificationSettings(){
+  const defaults = {
+    enabled: false,
+    dueToday: true,
+    overdue: true,
+    extraEmails: [],
+    primaryEmail: currentUser ? (currentUser.email || '') : ''
+  };
+  return { ...defaults, ...(S.notificationSettings || {}) };
+}
+function renderNotifications(){
+  const settings = getNotificationSettings();
+  const enabled=document.getElementById('notif-enabled');
+  const due=document.getElementById('notif-due-today');
+  const overdue=document.getElementById('notif-overdue');
+  if(enabled)enabled.checked=!!settings.enabled;
+  if(due)due.checked=settings.dueToday!==false;
+  if(overdue)overdue.checked=settings.overdue!==false;
+  renderExtraEmails();
+}
+function renderExtraEmails(){
+  const box=document.getElementById('extra-email-list');
+  if(!box)return;
+  const emails=(getNotificationSettings().extraEmails||[]).filter(Boolean);
+  if(!emails.length){
+    box.innerHTML='<div class="email-empty">No additional accountability emails added yet.</div>';
+    return;
+  }
+  box.innerHTML=emails.map((email,i)=>`
+    <div class="email-chip">
+      <span>${esc(email)}</span>
+      <button class="btn-sm danger" type="button" onclick="removeExtraEmail(${i})">Remove</button>
+    </div>
+  `).join('');
+}
+function addExtraEmail(){
+  const input=document.getElementById('extra-email-input');
+  if(!input)return;
+  const email=normalizeEmail(input.value);
+  if(!email){input.focus();return}
+  if(!isValidEmail(email)){
+    alert('Please enter a valid email address.');
+    input.focus();
+    return;
+  }
+  const settings=getNotificationSettings();
+  const primary=normalizeEmail(settings.primaryEmail);
+  const existing=(settings.extraEmails||[]).map(normalizeEmail);
+  if(email===primary){
+    alert('This is already your main account email.');
+    input.value='';
+    return;
+  }
+  if(existing.includes(email)){
+    alert('This email is already in your accountability list.');
+    input.value='';
+    return;
+  }
+  settings.extraEmails=[...(settings.extraEmails||[]),email];
+  S.notificationSettings=settings;
+  input.value='';
+  renderExtraEmails();
+}
+function removeExtraEmail(index){
+  const settings=getNotificationSettings();
+  settings.extraEmails=(settings.extraEmails||[]).filter((_,i)=>i!==index);
+  S.notificationSettings=settings;
+  renderExtraEmails();
+}
+function saveNotificationSettings(){
+  if(!currentUser)return;
+  const settings={
+    enabled: !!document.getElementById('notif-enabled')?.checked,
+    dueToday: !!document.getElementById('notif-due-today')?.checked,
+    overdue: !!document.getElementById('notif-overdue')?.checked,
+    extraEmails: (getNotificationSettings().extraEmails||[]).map(normalizeEmail).filter(isValidEmail),
+    primaryEmail: currentUser.email || '',
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  S.notificationSettings=settings;
+  setSyncStatus('saving');
+  notificationRef().set(settings,{merge:true})
+    .then(()=>{
+      setSyncStatus('synced');
+      alert('Notification settings saved.');
+    })
+    .catch(e=>{
+      console.error(e);
+      setSyncStatus('error');
+      alert('Could not save notification settings: '+e.message);
+    });
+}
+
+
+
 // ── SLIDESHOW ─────────────────────────────────────────────────────────────────
 const PEOPLE=[["Julius Nyerere", "Baba wa Taifa — Mwanzilishi wa Tanzania", "Uhuru wa kweli huanza pale ambapo unyonyaji unaisha."], ["John P. Magufuli", "Rais wa Tano wa Jamhuri ya Muungano wa Tanzania", "Tunaweza kufanya. Kama wengine wanaweza, kwa nini sisi tushindwe?"], ["Patrice Lumumba", "Waziri Mkuu wa Kwanza wa Jamhuri ya Kongo", "Hatuko peke yetu. Afrika yote iko upande wetu."], ["Nelson Mandela", "Rais wa Kwanza wa Afrika Kusini Baada ya Ubaguzi", "Inaonekana haiwezekani mpaka inafanyika."], ["Thomas Sankara", "Rais wa Mapinduzi wa Burkina Faso", "Huwezi kufanya mabadiliko ya kweli bila ujasiri wa kipekee."]];
 let slideIdx = 0;
@@ -916,8 +1550,9 @@ setInterval(() => goToSlide(slideIdx + 1), 4000);
 
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')closeGoalModal();
+  if(e.key==='Escape'){closeGoalModal();closeSidebar();}
   if(e.key==='Enter'&&document.getElementById('goal-modal').classList.contains('show')&&document.activeElement!==document.getElementById('gm-desc'))saveGoalModal();
+  if(e.key==='Enter'&&document.activeElement===document.getElementById('extra-email-input'))addExtraEmail();
 });
 </script>
 </body>
